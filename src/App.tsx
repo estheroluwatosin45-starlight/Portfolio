@@ -171,6 +171,7 @@ const ProgressCircle: React.FC<Skill> = ({ percentage, name }) => (
 
 export default function App() {
   const [filter, setFilter] = useState<'All' | 'Frontend' | 'Backend' | 'Full Stack'>('All');
+  const [isImageToggled, setIsImageToggled] = useState(false);
 
   const filteredProjects = PROJECTS.filter(p => filter === 'All' || p.type === filter);
 
@@ -279,17 +280,20 @@ export default function App() {
             <div className="absolute inset-0 rounded-[3rem] border border-primary/20 bg-gradient-to-br from-primary/10 to-transparent backdrop-blur-xl shadow-[0_0_30px_rgba(92,92,255,0.2)] -rotate-3 transition-transform duration-500 hover:-rotate-6"></div>
             
             {/* The Generated Abstract Image */}
-            <div className="absolute inset-0 rounded-[3rem] overflow-hidden p-2 group cursor-pointer">
+            <div 
+              className="absolute inset-0 rounded-[3rem] overflow-hidden p-2 group cursor-pointer"
+              onClick={() => setIsImageToggled(!isImageToggled)}
+            >
               <div className="relative w-full h-full rounded-[2.5rem] overflow-hidden drop-shadow-[0_20px_50px_rgba(0,0,0,0.5)]">
                 <img 
                   src="/hero_abstract_shape.png" 
                   alt="Abstract 3D Shape" 
-                  className="absolute inset-0 w-full h-full object-cover transition-all duration-700 opacity-100 group-hover:opacity-0 group-hover:scale-105"
+                  className={`absolute inset-0 w-full h-full object-cover transition-all duration-700 md:group-hover:scale-105 ${isImageToggled ? 'opacity-0 scale-105' : 'opacity-100 md:group-hover:opacity-0'}`}
                 />
                 <img 
                   src="/hero_abstract_shape_hover.png" 
                   alt="Abstract 3D Shape Hover" 
-                  className="absolute inset-0 w-full h-full object-cover transition-all duration-700 opacity-0 group-hover:opacity-100 group-hover:scale-105"
+                  className={`absolute inset-0 w-full h-full object-cover transition-all duration-700 md:group-hover:scale-105 ${isImageToggled ? 'opacity-100 scale-105' : 'opacity-0 md:group-hover:opacity-100'}`}
                 />
               </div>
             </div>
