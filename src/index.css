@@ -84,3 +84,7 @@ body {
 h1, h2, h3, h4 {
   @apply font-serif;
 }
+
+@utility glow-text {
+  text-shadow: 0 0 15px var(--color-primary), 0 0 30px var(--color-secondary);
+}

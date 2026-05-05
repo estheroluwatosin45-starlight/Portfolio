@@ -186,18 +186,39 @@ export default function App() {
       </div>
 
       {/* Hero Section */}
-      <section className="min-h-screen pt-32 pb-24 px-6 md:px-12 max-w-[1400px] mx-auto flex flex-col md:flex-row items-center justify-between relative">
-        {/* Background edgy elements */}
-        <div className="absolute top-1/4 left-10 w-32 h-32 border border-primary/40 rotate-45 pointer-events-none"></div>
-        <div className="absolute bottom-1/4 right-20 w-64 h-64 border border-secondary/20 rounded-full pointer-events-none mix-blend-overlay"></div>
+      <section className="min-h-screen pt-32 pb-24 px-6 md:px-12 max-w-[1400px] mx-auto flex flex-col lg:flex-row items-center justify-between relative">
         
+        {/* Floating Particles Background */}
+        <div className="absolute inset-0 pointer-events-none overflow-hidden">
+          {[...Array(20)].map((_, i) => (
+            <motion.div
+              key={i}
+              className="absolute w-1 h-1 bg-primary/40 rounded-full shadow-[0_0_10px_rgba(193,193,255,0.8)]"
+              initial={{ 
+                x: Math.random() * (typeof window !== 'undefined' ? window.innerWidth : 1000), 
+                y: Math.random() * (typeof window !== 'undefined' ? window.innerHeight : 800),
+                opacity: Math.random() * 0.5 + 0.1
+              }}
+              animate={{ 
+                y: [null, Math.random() * -200 - 100],
+                opacity: [null, 0]
+              }}
+              transition={{
+                duration: Math.random() * 5 + 5,
+                repeat: Infinity,
+                ease: "linear"
+              }}
+            />
+          ))}
+        </div>
+
         {/* Left Column: Big Typography */}
-        <div className="w-full md:w-[60%] z-10 flex flex-col relative">
+        <div className="w-full lg:w-[50%] z-10 flex flex-col relative">
           <motion.h1
             initial={{ x: -50, opacity: 0 }}
             animate={{ x: 0, opacity: 1 }}
             transition={{ duration: 0.8, ease: "easeOut" }}
-            className="text-[18vw] md:text-[10rem] font-black text-transparent bg-clip-text bg-gradient-to-r from-white via-white/90 to-white/50 leading-[0.85] tracking-tighter uppercase"
+            className="text-[15vw] lg:text-[8rem] font-black text-transparent bg-clip-text bg-gradient-to-r from-white via-white/90 to-white/50 leading-[0.85] tracking-tighter uppercase"
           >
             Esther
           </motion.h1>
@@ -205,7 +226,7 @@ export default function App() {
             initial={{ x: -50, opacity: 0 }}
             animate={{ x: 0, opacity: 1 }}
             transition={{ duration: 0.8, delay: 0.1, ease: "easeOut" }}
-            className="text-[18vw] md:text-[10rem] font-black text-transparent bg-clip-text bg-gradient-to-br from-primary to-secondary leading-[0.85] tracking-tighter uppercase ml-0 md:ml-12 lg:ml-24"
+            className="text-[15vw] lg:text-[8rem] font-black text-transparent bg-clip-text bg-gradient-to-br from-primary via-secondary to-tertiary leading-[0.85] tracking-tighter uppercase lg:ml-12 drop-shadow-[0_0_30px_rgba(92,92,255,0.3)]"
           >
             Ilori
           </motion.h1>
@@ -214,37 +235,65 @@ export default function App() {
             initial={{ width: 0 }}
             animate={{ width: "100%" }}
             transition={{ duration: 1, delay: 0.5 }}
-            className="h-px bg-gradient-to-r from-primary to-transparent mt-12 max-w-md hidden md:block"
+            className="h-px bg-gradient-to-r from-primary to-transparent mt-8 lg:mt-12 max-w-md hidden md:block"
           />
-        </div>
 
-        {/* Right Column: Overlapping Card */}
-        <motion.div
-          initial={{ y: 50, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ duration: 0.8, delay: 0.3 }}
-          className="w-full md:w-[45%] mt-12 md:mt-0 md:-ml-[10%] z-20"
-        >
-          <div className="glass-card rounded-none md:rounded-2xl border-l-4 border-l-primary border-t border-r border-b border-white/10 p-8 md:p-12 relative overflow-hidden backdrop-blur-xl bg-white/5 shadow-2xl shadow-black/50">
-            <div className="absolute -top-10 -right-10 w-40 h-40 bg-secondary/20 blur-3xl rounded-full pointer-events-none" />
-            
-            <p className="text-xl md:text-2xl text-white font-medium mb-8 leading-relaxed">
-              Full Stack Developer crafting <span className="text-primary italic font-serif">unconventional</span>, high-performance web experiences.
+          {/* Intro Text & Buttons */}
+          <motion.div
+            initial={{ y: 30, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ duration: 0.8, delay: 0.4 }}
+            className="mt-8 lg:mt-12 max-w-xl"
+          >
+            <p className="text-lg md:text-2xl text-on-surface-variant font-medium mb-8 leading-relaxed">
+              Full Stack Developer crafting <span className="text-primary italic font-serif glow-text">unconventional</span>, high-performance web experiences.
             </p>
-            
             <div className="flex flex-col sm:flex-row gap-4">
-              <GlassButton primary onClick={() => document.getElementById('projects')?.scrollIntoView({ behavior: 'smooth' })} className="!rounded-none border-primary hover:bg-primary hover:text-white">
+              <GlassButton primary onClick={() => document.getElementById('projects')?.scrollIntoView({ behavior: 'smooth' })} className="border-primary hover:bg-primary hover:text-white">
                 View Work
               </GlassButton>
-              <GlassButton onClick={() => document.getElementById('contact')?.scrollIntoView({ behavior: 'smooth' })} className="!rounded-none">
+              <GlassButton onClick={() => document.getElementById('contact')?.scrollIntoView({ behavior: 'smooth' })}>
                 Contact
               </GlassButton>
             </div>
+          </motion.div>
+        </div>
 
-            {/* Edgy accent */}
-            <div className="absolute bottom-0 right-0 w-16 h-16 border-b-2 border-r-2 border-primary/50" />
-            <div className="absolute top-0 right-8 w-px h-16 bg-gradient-to-b from-white/20 to-transparent" />
-          </div>
+        {/* Right Column: Dynamic Abstract Image */}
+        <motion.div
+          initial={{ scale: 0.8, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          transition={{ duration: 1.2, delay: 0.2, ease: "easeOut" }}
+          className="w-full lg:w-[45%] mt-16 lg:mt-0 z-20 flex justify-center lg:justify-end relative"
+        >
+          {/* Glowing backdrop for the image */}
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[80%] h-[80%] bg-secondary/20 blur-[100px] rounded-full mix-blend-screen pointer-events-none" />
+          
+          <motion.div
+            animate={{ y: [-10, 10, -10] }}
+            transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
+            className="relative w-full max-w-lg aspect-square"
+          >
+            {/* Layered Glass Frames */}
+            <div className="absolute inset-0 rounded-[3rem] border border-white/10 bg-white/5 backdrop-blur-3xl shadow-[0_0_50px_rgba(0,0,0,0.5)] rotate-6 transition-transform duration-500 hover:rotate-12"></div>
+            <div className="absolute inset-0 rounded-[3rem] border border-primary/20 bg-gradient-to-br from-primary/10 to-transparent backdrop-blur-xl shadow-[0_0_30px_rgba(92,92,255,0.2)] -rotate-3 transition-transform duration-500 hover:-rotate-6"></div>
+            
+            {/* The Generated Abstract Image */}
+            <div className="absolute inset-0 rounded-[3rem] overflow-hidden p-2 group cursor-pointer">
+              <div className="relative w-full h-full rounded-[2.5rem] overflow-hidden drop-shadow-[0_20px_50px_rgba(0,0,0,0.5)]">
+                <img 
+                  src="/hero_abstract_shape.png" 
+                  alt="Abstract 3D Shape" 
+                  className="absolute inset-0 w-full h-full object-cover transition-all duration-700 opacity-100 group-hover:opacity-0 group-hover:scale-105"
+                />
+                <img 
+                  src="/hero_abstract_shape_hover.png" 
+                  alt="Abstract 3D Shape Hover" 
+                  className="absolute inset-0 w-full h-full object-cover transition-all duration-700 opacity-0 group-hover:opacity-100 group-hover:scale-105"
+                />
+              </div>
+            </div>
+          </motion.div>
         </motion.div>
       </section>
 
@@ -462,13 +511,15 @@ export default function App() {
 
           <div className="flex justify-center gap-4 mt-12">
             {[
-              { icon: Github, label: "GitHub", href: "#" },
-              { icon: Linkedin, label: "LinkedIn", href: "#" },
-              { icon: Twitter, label: "Twitter", href: "#" }
+              { icon: Github, label: "GitHub", href: "https://github.com/estheroluwatosin45-starlight" },
+              { icon: Linkedin, label: "LinkedIn", href: "https://linkedin.com/in/-esther-ilori" },
+              { icon: Twitter, label: "Twitter", href: "https://twitter.com/EstherOluw91095" }
             ].map((social) => (
               <a
                 key={social.label}
                 href={social.href}
+                target="_blank"
+                rel="noopener noreferrer"
                 className="glass-pill px-6 py-3 rounded-full flex items-center gap-2 text-xs font-bold text-on-surface-variant hover:text-white transition-all border-white/10"
               >
                 <social.icon size={16} /> {social.label}
@@ -486,13 +537,20 @@ export default function App() {
             © 2024 Esther Ilori. Crafted with precision.
           </p>
           <div className="flex gap-8">
-            {['LinkedIn', 'Dribbble', 'GitHub', 'Twitter'].map(link => (
+            {[
+              { label: 'LinkedIn', href: 'https://linkedin.com/in/-esther-ilori' }, 
+              { label: 'Dribbble', href: 'https://dribbble.com/esther_ilori' }, 
+              { label: 'GitHub', href: 'https://github.com/estheroluwatosin45-starlight' }, 
+              { label: 'Twitter', href: 'https://twitter.com/EstherOluw91095' }
+            ].map(link => (
               <a
-                key={link}
-                href="#"
+                key={link.label}
+                href={link.href}
+                target="_blank"
+                rel="noopener noreferrer"
                 className="text-white/40 hover:text-primary transition-colors text-[10px] uppercase tracking-widest font-bold"
               >
-                {link}
+                {link.label}
               </a>
             ))}
           </div>
