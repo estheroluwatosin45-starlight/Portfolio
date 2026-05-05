@@ -26,6 +26,9 @@ interface Project {
   tags: string[];
   gradient: string;
   type: 'Frontend' | 'Backend' | 'Full Stack';
+  link?: string;
+  github?: string;
+  image?: string;
 }
 
 interface Skill {
@@ -36,25 +39,31 @@ interface Skill {
 // --- Data ---
 const PROJECTS: Project[] = [
   {
-    title: "E-Commerce Platform",
-    description: "A high-performance scalable headless commerce solution with real-time inventory management.",
-    tags: ["Next.js", "Stripe", "Tailwind"],
-    gradient: "from-emerald-500/80 to-teal-900/80",
-    type: "Full Stack"
+    title: "Coffee Shop",
+    description: "A warm, inviting digital café experience — beautifully crafted with pure HTML & CSS to bring the aroma of coffee to your screen.",
+    tags: ["HTML", "CSS"],
+    gradient: "from-amber-600/80 to-stone-900/80",
+    type: "Frontend",
+    link: "https://coffe-shop-website-kappa.vercel.app/",
+    image: "/project_coffee.png"
   },
   {
-    title: "Social Dashboard",
-    description: "Real-time analytics dashboard aggregating multiple social media feeds into a unified clean interface.",
-    tags: ["React", "Node.js", "GraphQL"],
-    gradient: "from-orange-500/80 to-pink-900/80",
-    type: "Frontend"
+    title: "Greener Nigeria",
+    description: "A tree planting awareness campaign encouraging Nigerians to join the movement to plant and protect trees for a greener future.",
+    tags: ["HTML", "CSS", "JavaScript"],
+    gradient: "from-green-600/80 to-emerald-900/80",
+    type: "Frontend",
+    link: "https://treeplanting-two.vercel.app/",
+    image: "/project_greener.png"
   },
   {
-    title: "FinTech App",
-    description: "Secure mobile-first banking interface with predictive budgeting and visual data representation.",
-    tags: ["Vue.js", "Python", "PostgreSQL"],
-    gradient: "from-blue-600/80 to-indigo-900/80",
-    type: "Full Stack"
+    title: "Studify",
+    description: "A focused student workspace to upload study materials, generate practice questions, and keep up with daily review — all in one place.",
+    tags: ["HTML", "CSS", "JavaScript"],
+    gradient: "from-violet-600/80 to-blue-900/80",
+    type: "Frontend",
+    link: "https://student-forge.vercel.app/",
+    image: "/project_studify.png"
   }
 ];
 
@@ -172,8 +181,25 @@ const ProgressCircle: React.FC<Skill> = ({ percentage, name }) => (
 export default function App() {
   const [filter, setFilter] = useState<'All' | 'Frontend' | 'Backend' | 'Full Stack'>('All');
   const [isImageToggled, setIsImageToggled] = useState(false);
+  const [theme, setTheme] = useState<'theme-default' | 'theme-blaze' | 'theme-cyber'>('theme-default');
+  const [selectedProject, setSelectedProject] = useState<Project | null>(null);
+
+  // Apply theme class to root so body background also updates
+  useEffect(() => {
+    const root = document.documentElement;
+    root.classList.remove('theme-blaze', 'theme-cyber');
+    if (theme !== 'theme-default') root.classList.add(theme);
+  }, [theme]);
 
   const filteredProjects = PROJECTS.filter(p => filter === 'All' || p.type === filter);
+
+  // Pick the correct image pair based on active theme
+  const heroImageMap = {
+    'theme-default': { src: '/hero_abstract_shape.png',       alt: '/hero_indigo_alt.png' },
+    'theme-blaze':   { src: '/hero_abstract_shape_hover.png', alt: '/hero_abstract_shape_cyber.png' },
+    'theme-cyber':   { src: '/hero_abstract_shape_cyber.png', alt: '/hero_abstract_shape.png' },
+  };
+  const { src: heroSrc, alt: heroAlt } = heroImageMap[theme];
 
   return (
     <div className="min-h-screen relative overflow-x-hidden selection:bg-primary/30">
@@ -285,15 +311,21 @@ export default function App() {
               onClick={() => setIsImageToggled(!isImageToggled)}
             >
               <div className="relative w-full h-full rounded-[2.5rem] overflow-hidden drop-shadow-[0_20px_50px_rgba(0,0,0,0.5)]">
-                <img 
-                  src="/hero_abstract_shape.png" 
-                  alt="Abstract 3D Shape" 
-                  className={`absolute inset-0 w-full h-full object-cover transition-all duration-700 md:group-hover:scale-105 ${isImageToggled ? 'opacity-0 scale-105' : 'opacity-100 md:group-hover:opacity-0'}`}
+                {/* Default image — visible normally, fades on hover or click */}
+                <img
+                  src={heroSrc}
+                  alt="Hero shape default"
+                  className={`absolute inset-0 w-full h-full object-cover transition-all duration-700
+                    group-hover:opacity-0 group-hover:scale-105
+                    ${isImageToggled ? 'opacity-0 scale-105' : 'opacity-100 scale-100'}`}
                 />
-                <img 
-                  src="/hero_abstract_shape_hover.png" 
-                  alt="Abstract 3D Shape Hover" 
-                  className={`absolute inset-0 w-full h-full object-cover transition-all duration-700 md:group-hover:scale-105 ${isImageToggled ? 'opacity-100 scale-105' : 'opacity-0 md:group-hover:opacity-100'}`}
+                {/* Alt image — hidden normally, shows on hover or click */}
+                <img
+                  src={heroAlt}
+                  alt="Hero shape alt"
+                  className={`absolute inset-0 w-full h-full object-cover transition-all duration-700
+                    group-hover:opacity-100 group-hover:scale-100
+                    ${isImageToggled ? 'opacity-100 scale-100' : 'opacity-0 scale-105'}`}
                 />
               </div>
             </div>
@@ -413,7 +445,7 @@ export default function App() {
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           <AnimatePresence mode="popLayout">
-            {filteredProjects.map((project, i) => (
+            {filteredProjects.map((project) => (
               <motion.article
                 layout
                 initial={{ scale: 0.9, opacity: 0 }}
@@ -421,36 +453,43 @@ export default function App() {
                 exit={{ scale: 0.9, opacity: 0 }}
                 transition={{ duration: 0.4 }}
                 key={project.title}
-                className="glass-card rounded-xl overflow-hidden group border-white/10"
+                onClick={() => setSelectedProject(project)}
+                className="glass-card rounded-xl overflow-hidden group border-white/10 cursor-pointer"
               >
-                <div className={`h-48 bg-gradient-to-br ${project.gradient} p-8 flex items-center justify-center overflow-hidden`}>
-                  <motion.div
-                    whileHover={{ scale: 1.1, rotate: 5 }}
-                    className="w-24 h-24 bg-white/10 backdrop-blur-md rounded-2xl border border-white/20 flex items-center justify-center"
-                  >
-                    <Code className="text-white" size={32} />
-                  </motion.div>
+              <div className={`h-48 bg-gradient-to-br ${project.gradient} overflow-hidden relative`}>
+                  {project.image ? (
+                    <img
+                      src={project.image}
+                      alt={project.title}
+                      className="w-full h-full object-cover object-top transition-transform duration-700 group-hover:scale-105"
+                    />
+                  ) : (
+                    <div className="w-full h-full p-8 flex items-center justify-center">
+                      <motion.div
+                        whileHover={{ scale: 1.1, rotate: 5 }}
+                        className="w-24 h-24 bg-white/10 backdrop-blur-md rounded-2xl border border-white/20 flex items-center justify-center"
+                      >
+                        <Code className="text-white" size={32} />
+                      </motion.div>
+                    </div>
+                  )}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
                 </div>
                 <div className="p-8">
                   <div className="text-[10px] uppercase tracking-widest text-primary mb-2 font-bold">{project.type}</div>
                   <h3 className="text-2xl font-bold text-white mb-3 group-hover:text-primary transition-colors">{project.title}</h3>
-                  <p className="text-on-surface-variant text-sm mb-6 leading-relaxed">
+                  <p className="text-on-surface-variant text-sm mb-6 leading-relaxed line-clamp-2">
                     {project.description}
                   </p>
-                  <div className="flex flex-wrap gap-2 mb-8">
+                  <div className="flex flex-wrap gap-2 mb-6">
                     {project.tags.map(tag => (
                       <span key={tag} className="text-[10px] font-bold text-secondary uppercase bg-secondary/10 px-3 py-1 rounded-full border border-secondary/20">
                         {tag}
                       </span>
                     ))}
                   </div>
-                  <div className="flex gap-4">
-                    <button className="glass-pill p-3 rounded-full hover:text-primary transition-colors border-white/10">
-                      <Code size={18} />
-                    </button>
-                    <button className="glass-pill p-3 rounded-full hover:text-primary transition-colors border-white/10">
-                      <ExternalLink size={18} />
-                    </button>
+                  <div className="text-[10px] uppercase tracking-widest text-primary/60 font-bold flex items-center gap-1 group-hover:text-primary transition-colors">
+                    View details <ChevronRight size={12} />
                   </div>
                 </div>
               </motion.article>
@@ -458,6 +497,95 @@ export default function App() {
           </AnimatePresence>
         </div>
       </section>
+
+      {/* Project Modal */}
+      <AnimatePresence>
+        {selectedProject && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setSelectedProject(null)}
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm"
+          >
+            <motion.div
+              initial={{ scale: 0.85, opacity: 0, y: 40 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.85, opacity: 0, y: 40 }}
+              transition={{ type: 'spring', damping: 25 }}
+              onClick={(e) => e.stopPropagation()}
+              className="glass-card rounded-2xl overflow-hidden w-full max-w-lg border-white/10 shadow-2xl shadow-black/60"
+            >
+              {/* Modal Header Banner */}
+              <div className="h-52 relative overflow-hidden">
+                {selectedProject.image ? (
+                  <img
+                    src={selectedProject.image}
+                    alt={selectedProject.title}
+                    className="w-full h-full object-cover object-top"
+                  />
+                ) : (
+                  <div className={`w-full h-full bg-gradient-to-br ${selectedProject.gradient}`} />
+                )}
+                {/* Overlay with title */}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent flex items-end p-6">
+                  <div>
+                    <div className="text-[10px] uppercase tracking-widest text-white/60 font-bold mb-1">{selectedProject.type}</div>
+                    <h2 className="text-3xl font-black text-white tracking-tight">{selectedProject.title}</h2>
+                  </div>
+                </div>
+              </div>
+
+              {/* Modal Body */}
+              <div className="p-8">
+                <p className="text-on-surface-variant text-base leading-relaxed mb-6">
+                  {selectedProject.description}
+                </p>
+
+                <div className="mb-8">
+                  <p className="text-[10px] uppercase tracking-widest text-white/40 font-bold mb-3">Built with</p>
+                  <div className="flex flex-wrap gap-2">
+                    {selectedProject.tags.map(tag => (
+                      <span key={tag} className="text-[10px] font-bold text-secondary uppercase bg-secondary/10 px-4 py-1.5 rounded-full border border-secondary/20">
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="flex gap-4">
+                  {selectedProject.link && (
+                    <a
+                      href={selectedProject.link}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex-1 py-3 bg-primary-container/20 border border-primary/30 text-primary font-bold uppercase tracking-widest text-xs rounded-full flex items-center justify-center gap-2 hover:border-primary/60 transition-all"
+                    >
+                      Visit Live Site <ExternalLink size={14} />
+                    </a>
+                  )}
+                  {selectedProject.github && (
+                    <a
+                      href={selectedProject.github}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex-1 py-3 bg-white/5 border border-white/10 text-white/60 font-bold uppercase tracking-widest text-xs rounded-full flex items-center justify-center gap-2 hover:bg-white/10 transition-all"
+                    >
+                      GitHub <Code size={14} />
+                    </a>
+                  )}
+                  <button
+                    onClick={() => setSelectedProject(null)}
+                    className="glass-pill px-5 py-3 rounded-full text-white/40 hover:text-white text-xs font-bold uppercase tracking-widest transition-all border-white/10"
+                  >
+                    Close
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Contact Section */}
       <section id="contact" className="py-24 px-6 max-w-7xl mx-auto">
@@ -560,6 +688,25 @@ export default function App() {
           </div>
         </div>
       </footer>
+
+      {/* Theme Switcher */}
+      <div className="fixed bottom-6 right-6 z-50 glass-pill px-4 py-3 rounded-full flex gap-3 shadow-2xl shadow-black/50 border-white/20">
+        <button 
+          onClick={() => setTheme('theme-default')}
+          className={`w-6 h-6 rounded-full bg-[#c1c1ff] border-2 transition-all ${theme === 'theme-default' ? 'border-white scale-125' : 'border-transparent hover:scale-110'}`}
+          title="Indigo Theme"
+        />
+        <button 
+          onClick={() => setTheme('theme-blaze')}
+          className={`w-6 h-6 rounded-full bg-[#ffb4a9] border-2 transition-all ${theme === 'theme-blaze' ? 'border-white scale-125' : 'border-transparent hover:scale-110'}`}
+          title="Blaze Theme"
+        />
+        <button 
+          onClick={() => setTheme('theme-cyber')}
+          className={`w-6 h-6 rounded-full bg-[#58dfc4] border-2 transition-all ${theme === 'theme-cyber' ? 'border-white scale-125' : 'border-transparent hover:scale-110'}`}
+          title="Cyber Theme"
+        />
+      </div>
     </div>
   );
 }

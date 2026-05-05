@@ -1,6 +1,39 @@
 @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=Noto+Serif:wght@400;600;700&display=swap');
 @import "tailwindcss";
 
+:root {
+  --theme-primary: #c1c1ff;
+  --theme-primary-container: #5c5cff;
+  --theme-secondary: #d3bbff;
+  --theme-secondary-container: #5a24b3;
+  --theme-tertiary: #abc7ff;
+  --theme-tertiary-container: #1b71da;
+  --theme-primary-rgb: 92, 92, 255;
+  --theme-secondary-rgb: 211, 187, 255;
+}
+
+.theme-blaze {
+  --theme-primary: #ffb4a9;
+  --theme-primary-container: #ff5449;
+  --theme-secondary: #ffb1c8;
+  --theme-secondary-container: #d91d64;
+  --theme-tertiary: #ffb4ab;
+  --theme-tertiary-container: #e64032;
+  --theme-primary-rgb: 255, 84, 73;
+  --theme-secondary-rgb: 217, 29, 100;
+}
+
+.theme-cyber {
+  --theme-primary: #58dfc4;
+  --theme-primary-container: #005041;
+  --theme-secondary: #82d8e3;
+  --theme-secondary-container: #004f56;
+  --theme-tertiary: #5df2b8;
+  --theme-tertiary-container: #005238;
+  --theme-primary-rgb: 0, 80, 65;
+  --theme-secondary-rgb: 0, 79, 86;
+}
+
 @theme {
   --font-serif: "Noto Serif", serif;
   --font-sans: "Manrope", sans-serif;
@@ -17,16 +50,16 @@
   --color-on-surface: #e1e2e4;
   --color-on-surface-variant: #c6c4d8;
   
-  --color-primary: #c1c1ff;
-  --color-primary-container: #5c5cff;
+  --color-primary: var(--theme-primary);
+  --color-primary-container: var(--theme-primary-container);
   --color-on-primary-container: #fdf9ff;
   
-  --color-secondary: #d3bbff;
-  --color-secondary-container: #5a24b3;
+  --color-secondary: var(--theme-secondary);
+  --color-secondary-container: var(--theme-secondary-container);
   --color-on-secondary-container: #c7aaff;
   
-  --color-tertiary: #abc7ff;
-  --color-tertiary-container: #1b71da;
+  --color-tertiary: var(--theme-tertiary);
+  --color-tertiary-container: var(--theme-tertiary-container);
   
   --radius-xl: 3rem;
   --radius-lg: 2rem;
@@ -35,12 +68,13 @@
 @utility mesh-gradient {
   background-color: #111415;
   background-image: 
-    radial-gradient(at 0% 0%, rgba(92, 92, 255, 0.2) 0px, transparent 50%),
-    radial-gradient(at 100% 0%, rgba(171, 199, 255, 0.15) 0px, transparent 50%),
-    radial-gradient(at 100% 100%, rgba(211, 187, 255, 0.1) 0px, transparent 50%),
-    radial-gradient(at 0% 100%, rgba(92, 92, 255, 0.05) 0px, transparent 50%),
+    radial-gradient(at 0% 0%, rgba(var(--theme-primary-rgb), 0.2) 0px, transparent 50%),
+    radial-gradient(at 100% 0%, rgba(var(--theme-secondary-rgb), 0.15) 0px, transparent 50%),
+    radial-gradient(at 100% 100%, rgba(var(--theme-secondary-rgb), 0.1) 0px, transparent 50%),
+    radial-gradient(at 0% 100%, rgba(var(--theme-primary-rgb), 0.05) 0px, transparent 50%),
     linear-gradient(180deg, #111415 0%, #0c0f10 100%);
   background-attachment: fixed;
+  transition: all 0.5s ease;
 }
 
 @utility glass-card {
