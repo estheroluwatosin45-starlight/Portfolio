@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { motion, AnimatePresence, useMotionValue, useSpring, useTransform } from 'motion/react';
 import {
   Github,
   Linkedin,
@@ -77,6 +77,54 @@ const SKILLS: Skill[] = [
 
 const TOOLS = ["Git", "GitHub", "VS Code", "Figma", "REST APIs", "MongoDB"];
 
+// --- DNA Preloader Data (one palette per theme) ---
+const DELAYS = ['0s','.05s','.1s','.15s','.2s','.25s','.3s','.35s','.4s','.45s','.5s'];
+
+const DNA_THEME_LINES: Record<string, { lineColor: string; dotColor: string; delay: string }[]> = {
+  // Indigo — deep violet → indigo → periwinkle
+  'theme-default': [
+    { lineColor: '#1a0a9e', dotColor: '#c1c1ff', delay: DELAYS[0]  },
+    { lineColor: '#2510cb', dotColor: '#b4a0ff', delay: DELAYS[1]  },
+    { lineColor: '#3d1fdb', dotColor: '#d3bbff', delay: DELAYS[2]  },
+    { lineColor: '#5c3aff', dotColor: '#c1c1ff', delay: DELAYS[3]  },
+    { lineColor: '#5c5cff', dotColor: '#abc7ff', delay: DELAYS[4]  },
+    { lineColor: '#6d52ff', dotColor: '#d3bbff', delay: DELAYS[5]  },
+    { lineColor: '#7c6cff', dotColor: '#c1c1ff', delay: DELAYS[6]  },
+    { lineColor: '#8c78ff', dotColor: '#abc7ff', delay: DELAYS[7]  },
+    { lineColor: '#6550d4', dotColor: '#d3bbff', delay: DELAYS[8]  },
+    { lineColor: '#4c35c8', dotColor: '#b4a0ff', delay: DELAYS[9]  },
+    { lineColor: '#3520b8', dotColor: '#c1c1ff', delay: DELAYS[10] },
+  ],
+  // Blaze — deep crimson → orange-red → coral/amber
+  'theme-blaze': [
+    { lineColor: '#7f1d1d', dotColor: '#ffb4a9', delay: DELAYS[0]  },
+    { lineColor: '#991b1b', dotColor: '#fca5a5', delay: DELAYS[1]  },
+    { lineColor: '#b91c1c', dotColor: '#ffb4ab', delay: DELAYS[2]  },
+    { lineColor: '#dc2626', dotColor: '#ffb4a9', delay: DELAYS[3]  },
+    { lineColor: '#ff5449', dotColor: '#ffb1c8', delay: DELAYS[4]  },
+    { lineColor: '#f97316', dotColor: '#ffb4a9', delay: DELAYS[5]  },
+    { lineColor: '#ea580c', dotColor: '#fdba74', delay: DELAYS[6]  },
+    { lineColor: '#d91d64', dotColor: '#ffb1c8', delay: DELAYS[7]  },
+    { lineColor: '#e11d48', dotColor: '#ffb4a9', delay: DELAYS[8]  },
+    { lineColor: '#be123c', dotColor: '#fca5a5', delay: DELAYS[9]  },
+    { lineColor: '#ff5449', dotColor: '#ffb4ab', delay: DELAYS[10] },
+  ],
+  // Cyber — deep teal → cyan → electric mint
+  'theme-cyber': [
+    { lineColor: '#003d30', dotColor: '#5df2b8', delay: DELAYS[0]  },
+    { lineColor: '#005041', dotColor: '#58dfc4', delay: DELAYS[1]  },
+    { lineColor: '#006b56', dotColor: '#34d399', delay: DELAYS[2]  },
+    { lineColor: '#059669', dotColor: '#6ee7b7', delay: DELAYS[3]  },
+    { lineColor: '#00b09b', dotColor: '#58dfc4', delay: DELAYS[4]  },
+    { lineColor: '#00e5c3', dotColor: '#82d8e3', delay: DELAYS[5]  },
+    { lineColor: '#14b8a6', dotColor: '#5df2b8', delay: DELAYS[6]  },
+    { lineColor: '#0d9488', dotColor: '#2dd4bf', delay: DELAYS[7]  },
+    { lineColor: '#0f766e', dotColor: '#99f6e4', delay: DELAYS[8]  },
+    { lineColor: '#004f56', dotColor: '#82d8e3', delay: DELAYS[9]  },
+    { lineColor: '#007060', dotColor: '#58dfc4', delay: DELAYS[10] },
+  ],
+};
+
 // --- Components ---
 
 const GlassButton = ({ children, primary = false, className = "", onClick }: { children: React.ReactNode, primary?: boolean, className?: string, onClick?: () => void }) => (
@@ -101,6 +149,8 @@ const Nav = () => {
 
   return (
     <motion.nav
+      role="navigation"
+      aria-label="Primary navigation"
       initial={{ y: -100, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
       className={`fixed top-6 left-1/2 -translate-x-1/2 z-50 flex items-center justify-between w-[90%] md:w-auto px-6 md:px-8 py-3 bg-white/10 backdrop-blur-[60px] rounded-full border border-white/20 shadow-[0_20px_50px_rgba(92,92,255,0.15)] transition-all duration-300 ${scrolled ? 'scale-95' : 'scale-100'}`}
@@ -178,11 +228,121 @@ const ProgressCircle: React.FC<Skill> = ({ percentage, name }) => (
   </div>
 );
 
+// --- Preloader Component ---
+const Preloader = ({ visible, theme }: { visible: boolean; theme: string }) => {
+  const lines = DNA_THEME_LINES[theme] ?? DNA_THEME_LINES['theme-default'];
+  return (
+  <AnimatePresence>
+    {visible && (
+      <motion.div
+        key="preloader"
+        initial={{ opacity: 1 }}
+        exit={{ opacity: 0, scale: 1.04 }}
+        transition={{ duration: 0.9, ease: 'easeInOut' }}
+        className="fixed inset-0 z-[200] flex flex-col items-center justify-center"
+        style={{ backgroundColor: '#0c0f10' }}
+      >
+        {/* DNA strand wrapper */}
+        <div style={{ position: 'relative', width: `${11 * 35 + 30}px`, height: '240px' }}>
+          {lines.map((line, i) => (
+            <div
+              key={i}
+              style={{
+                position: 'absolute',
+                top: '50%',
+                marginLeft: `${i * 35}px`,
+                width: '2px',
+                height: '8px',
+                backgroundColor: line.lineColor,
+                animation: `dna-line 2s cubic-bezier(0.25,0,0.705,1) ${line.delay} infinite`,
+              }}
+            >
+              {/* Circle top */}
+              <span style={{
+                position: 'absolute', display: 'block',
+                width: '8px', height: '8px', borderRadius: '50%',
+                backgroundColor: line.dotColor, top: '0px', left: '-3.5px',
+              }} />
+              {/* Dots */}
+              <div style={{ position: 'relative' }}>
+                <span style={{
+                  position: 'absolute', display: 'block',
+                  width: '4px', height: '4px', borderRadius: '50%',
+                  left: '-1.5px', backgroundColor: line.dotColor,
+                  top: '0px',
+                  animation: `dna-dot-top 2s cubic-bezier(0.25,0,0.705,1) ${line.delay} infinite`,
+                }} />
+                <span style={{
+                  position: 'absolute', display: 'block',
+                  width: '4px', height: '4px', borderRadius: '50%',
+                  left: '-1.5px', backgroundColor: line.dotColor,
+                  top: '0px',
+                  animation: `dna-dot-mid-top 2s cubic-bezier(0.25,0,0.705,1) ${line.delay} infinite`,
+                }} />
+                <span style={{
+                  position: 'absolute', display: 'block',
+                  width: '4px', height: '4px', borderRadius: '50%',
+                  left: '-1.5px', backgroundColor: line.dotColor,
+                  bottom: '0px',
+                  animation: `dna-dot-mid-bottom 2s cubic-bezier(0.25,0,0.705,1) ${line.delay} infinite`,
+                }} />
+                <span style={{
+                  position: 'absolute', display: 'block',
+                  width: '4px', height: '4px', borderRadius: '50%',
+                  left: '-1.5px', backgroundColor: line.dotColor,
+                  bottom: '0px',
+                  animation: `dna-dot-bottom 2s cubic-bezier(0.25,0,0.705,1) ${line.delay} infinite`,
+                }} />
+              </div>
+              {/* Circle bottom */}
+              <span style={{
+                position: 'absolute', display: 'block',
+                width: '8px', height: '8px', borderRadius: '50%',
+                backgroundColor: line.dotColor, bottom: '0px', left: '-3.5px',
+              }} />
+            </div>
+          ))}
+        </div>
+
+        {/* Branded label */}
+        <div className="mt-16 flex flex-col items-center gap-3">
+          <p
+            className="text-white font-black tracking-[0.25em] uppercase"
+            style={{ fontSize: '22px', fontFamily: 'Noto Serif, serif', letterSpacing: '0.3em' }}
+          >
+            Esther Ilori
+          </p>
+          <p
+            className="text-white/40 uppercase tracking-[0.4em]"
+            style={{ fontSize: '10px', fontFamily: 'Manrope, sans-serif' }}
+          >
+            Portfolio
+          </p>
+        </div>
+      </motion.div>
+    )}
+  </AnimatePresence>
+  );
+};
+
 export default function App() {
   const [filter, setFilter] = useState<'All' | 'Frontend' | 'Backend' | 'Full Stack'>('All');
   const [isImageToggled, setIsImageToggled] = useState(false);
   const [theme, setTheme] = useState<'theme-default' | 'theme-blaze' | 'theme-cyber'>('theme-default');
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  // Dismiss preloader after one full DNA cycle (2.5s anim + 0.3s buffer)
+  useEffect(() => {
+    const t = setTimeout(() => setIsLoading(false), 2800);
+    return () => clearTimeout(t);
+  }, []);
+
+  // Lock body scroll while preloader is visible
+  useEffect(() => {
+    document.body.style.overflow = isLoading ? 'hidden' : '';
+    return () => { document.body.style.overflow = ''; };
+  }, [isLoading]);
 
   // Apply theme class to root so body background also updates
   useEffect(() => {
@@ -191,29 +351,61 @@ export default function App() {
     if (theme !== 'theme-default') root.classList.add(theme);
   }, [theme]);
 
+  // ── 3-D tilt on mouse move ──────────────────────────────────────────────
+  const imageWrapRef = useRef<HTMLDivElement>(null);
+  const rawX = useMotionValue(0);
+  const rawY = useMotionValue(0);
+  const rotateX = useSpring(useTransform(rawY, [-0.5, 0.5], [14, -14]), { stiffness: 260, damping: 28 });
+  const rotateY = useSpring(useTransform(rawX, [-0.5, 0.5], [-14, 14]), { stiffness: 260, damping: 28 });
+
+  const handleImageMouseMove = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    rawX.set((e.clientX - rect.left) / rect.width - 0.5);
+    rawY.set((e.clientY - rect.top)  / rect.height - 0.5);
+  }, [rawX, rawY]);
+
+  const handleImageMouseLeave = useCallback(() => {
+    rawX.set(0);
+    rawY.set(0);
+  }, [rawX, rawY]);
+
+  // Theme-specific glow colour for the spinning ring
+  const themeGlowMap = {
+    'theme-default': { ring: '#c1c1ff', ring2: '#d3bbff' },
+    'theme-blaze':   { ring: '#ff6f3c', ring2: '#ffb4a9' },
+    'theme-cyber':   { ring: '#00e5c3', ring2: '#82d8e3' },
+  };
+  const { ring, ring2 } = themeGlowMap[theme];
+
   const filteredProjects = PROJECTS.filter(p => filter === 'All' || p.type === filter);
 
   // Pick the correct image pair based on active theme
   const heroImageMap = {
-    'theme-default': { src: '/hero_abstract_shape.png',       alt: '/hero_indigo_alt.png' },
-    'theme-blaze':   { src: '/hero_abstract_shape_hover.png', alt: '/hero_abstract_shape_cyber.png' },
-    'theme-cyber':   { src: '/hero_abstract_shape_cyber.png', alt: '/hero_abstract_shape.png' },
+    'theme-default': { src: '/hero_abstract_shape.png', alt: '/hero_indigo_alt.png' },
+    'theme-blaze':   { src: '/hero_blaze_default.png',  alt: '/hero_blaze_alt.png' },
+    'theme-cyber':   { src: '/hero_cyber_default.png',  alt: '/hero_cyber_alt.png' },
   };
   const { src: heroSrc, alt: heroAlt } = heroImageMap[theme];
 
   return (
-    <div className="min-h-screen relative overflow-x-hidden selection:bg-primary/30">
+    <>
+      <Preloader visible={isLoading} theme={theme} />
+      <div className="min-h-screen relative overflow-x-hidden selection:bg-primary/30">
       <Nav />
 
       {/* Atmospheric Background Layers */}
-      <div className="fixed inset-0 -z-10 pointer-events-none">
+      <div aria-hidden="true" className="fixed inset-0 -z-10 pointer-events-none">
         <div className="absolute top-0 left-1/4 w-[500px] h-[500px] bg-primary/10 blur-[150px] animate-pulse" />
         <div className="absolute bottom-0 right-1/4 w-[600px] h-[600px] bg-secondary/10 blur-[150px]" />
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full bg-[radial-gradient(circle_at_center,rgba(92,92,255,0.05)_0%,transparent_70%)]" />
       </div>
 
       {/* Hero Section */}
-      <section className="min-h-screen pt-32 pb-24 px-6 md:px-12 max-w-[1400px] mx-auto flex flex-col lg:flex-row items-center justify-between relative">
+      <section
+        id="hero"
+        aria-label="Introduction"
+        className="min-h-screen pt-32 pb-24 px-6 md:px-12 max-w-[1400px] mx-auto flex flex-col lg:flex-row items-center justify-between relative"
+      >
         
         {/* Floating Particles Background */}
         <div className="absolute inset-0 pointer-events-none overflow-hidden">
@@ -249,14 +441,14 @@ export default function App() {
           >
             Esther
           </motion.h1>
-          <motion.h1
+          <motion.span
             initial={{ x: -50, opacity: 0 }}
             animate={{ x: 0, opacity: 1 }}
             transition={{ duration: 0.8, delay: 0.1, ease: "easeOut" }}
-            className="text-[15vw] lg:text-[8rem] font-black text-transparent bg-clip-text bg-gradient-to-br from-primary via-secondary to-tertiary leading-[0.85] tracking-tighter uppercase lg:ml-12 drop-shadow-[0_0_30px_rgba(92,92,255,0.3)]"
+            className="block text-[15vw] lg:text-[8rem] font-black text-transparent bg-clip-text bg-gradient-to-br from-primary via-secondary to-tertiary leading-[0.85] tracking-tighter uppercase lg:ml-12 drop-shadow-[0_0_30px_rgba(92,92,255,0.3)]"
           >
             Ilori
-          </motion.h1>
+          </motion.span>
           
           <motion.div
             initial={{ width: 0 }}
@@ -293,25 +485,85 @@ export default function App() {
           transition={{ duration: 1.2, delay: 0.2, ease: "easeOut" }}
           className="w-full lg:w-[45%] mt-16 lg:mt-0 z-20 flex justify-center lg:justify-end relative"
         >
-          {/* Glowing backdrop for the image */}
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[80%] h-[80%] bg-secondary/20 blur-[100px] rounded-full mix-blend-screen pointer-events-none" />
-          
+          {/* Pulsing glowing backdrop — theme-coloured */}
+          <motion.div
+            animate={{ scale: [1, 1.15, 1], opacity: [0.25, 0.45, 0.25] }}
+            transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
+            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[80%] h-[80%] rounded-full mix-blend-screen pointer-events-none"
+            style={{ background: `radial-gradient(circle, ${ring}55 0%, transparent 70%)` }}
+          />
+
+          {/* Floating ambient orbs */}
+          {[0, 1, 2, 3].map((i) => (
+            <motion.div
+              key={i}
+              className="absolute rounded-full pointer-events-none"
+              style={{
+                width: `${12 + i * 6}px`,
+                height: `${12 + i * 6}px`,
+                background: i % 2 === 0 ? `${ring}99` : `${ring2}88`,
+                filter: 'blur(2px)',
+                top: `${[10, 70, 20, 80][i]}%`,
+                left: `${[5, 85, 90, 10][i]}%`,
+              }}
+              animate={{
+                y: [0, -20 - i * 8, 0],
+                x: [0, (i % 2 === 0 ? 10 : -10), 0],
+                opacity: [0.5, 1, 0.5],
+              }}
+              transition={{
+                duration: 3 + i * 1.2,
+                repeat: Infinity,
+                ease: 'easeInOut',
+                delay: i * 0.6,
+              }}
+            />
+          ))}
+
           <motion.div
             animate={{ y: [-10, 10, -10] }}
-            transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
+            transition={{ duration: 6, repeat: Infinity, ease: 'easeInOut' }}
             className="relative w-full max-w-lg aspect-square"
           >
+            {/* Spinning glow ring — outermost layer */}
+            <motion.div
+              animate={{ rotate: 360 }}
+              transition={{ duration: 8, repeat: Infinity, ease: 'linear' }}
+              className="absolute -inset-3 rounded-[3.5rem] pointer-events-none"
+              style={{
+                background: `conic-gradient(from 0deg, transparent 60%, ${ring}cc 80%, ${ring2}ff 90%, transparent 100%)`,
+                filter: `blur(6px)`,
+              }}
+            />
+            <motion.div
+              animate={{ rotate: -360 }}
+              transition={{ duration: 12, repeat: Infinity, ease: 'linear' }}
+              className="absolute -inset-2 rounded-[3.4rem] pointer-events-none"
+              style={{
+                background: `conic-gradient(from 180deg, transparent 50%, ${ring2}88 75%, transparent 100%)`,
+                filter: 'blur(4px)',
+              }}
+            />
+
             {/* Layered Glass Frames */}
-            <div className="absolute inset-0 rounded-[3rem] border border-white/10 bg-white/5 backdrop-blur-3xl shadow-[0_0_50px_rgba(0,0,0,0.5)] rotate-6 transition-transform duration-500 hover:rotate-12"></div>
-            <div className="absolute inset-0 rounded-[3rem] border border-primary/20 bg-gradient-to-br from-primary/10 to-transparent backdrop-blur-xl shadow-[0_0_30px_rgba(92,92,255,0.2)] -rotate-3 transition-transform duration-500 hover:-rotate-6"></div>
-            
-            {/* The Generated Abstract Image */}
-            <div 
+            <div className="absolute inset-0 rounded-[3rem] border border-white/10 bg-white/5 backdrop-blur-3xl shadow-[0_0_50px_rgba(0,0,0,0.5)] rotate-6 transition-transform duration-500 hover:rotate-12" />
+            <div
+              className="absolute inset-0 rounded-[3rem] border bg-gradient-to-br from-primary/10 to-transparent backdrop-blur-xl -rotate-3 transition-transform duration-500 hover:-rotate-6"
+              style={{ borderColor: `${ring}44`, boxShadow: `0 0 30px ${ring}33` }}
+            />
+
+            {/* 3-D tilt + image container */}
+            <motion.div
+              ref={imageWrapRef}
+              style={{ rotateX, rotateY, transformPerspective: 1000, transformStyle: 'preserve-3d' }}
+              onMouseMove={handleImageMouseMove}
+              onMouseLeave={handleImageMouseLeave}
               className="absolute inset-0 rounded-[3rem] overflow-hidden p-2 group cursor-pointer"
               onClick={() => setIsImageToggled(!isImageToggled)}
             >
               <div className="relative w-full h-full rounded-[2.5rem] overflow-hidden drop-shadow-[0_20px_50px_rgba(0,0,0,0.5)]">
-                {/* Default image — visible normally, fades on hover or click */}
+
+                {/* Default image */}
                 <img
                   src={heroSrc}
                   alt="Hero shape default"
@@ -319,7 +571,7 @@ export default function App() {
                     group-hover:opacity-0 group-hover:scale-105
                     ${isImageToggled ? 'opacity-0 scale-105' : 'opacity-100 scale-100'}`}
                 />
-                {/* Alt image — hidden normally, shows on hover or click */}
+                {/* Alt image */}
                 <img
                   src={heroAlt}
                   alt="Hero shape alt"
@@ -327,14 +579,33 @@ export default function App() {
                     group-hover:opacity-100 group-hover:scale-100
                     ${isImageToggled ? 'opacity-100 scale-100' : 'opacity-0 scale-105'}`}
                 />
+
+                {/* Shimmer sweep overlay */}
+                <div className="absolute inset-0 pointer-events-none overflow-hidden rounded-[2.5rem]">
+                  <motion.div
+                    className="absolute top-0 left-[-60%] w-[40%] h-full"
+                    style={{
+                      background: 'linear-gradient(105deg, transparent 40%, rgba(255,255,255,0.18) 50%, transparent 60%)',
+                      transform: 'skewX(-15deg)',
+                    }}
+                    animate={{ left: ['-60%', '140%'] }}
+                    transition={{ duration: 2.4, repeat: Infinity, repeatDelay: 3.5, ease: 'easeInOut' }}
+                  />
+                </div>
+
+                {/* Inner glow vignette */}
+                <div
+                  className="absolute inset-0 rounded-[2.5rem] pointer-events-none"
+                  style={{ boxShadow: `inset 0 0 60px ${ring}44` }}
+                />
               </div>
-            </div>
+            </motion.div>
           </motion.div>
         </motion.div>
       </section>
 
       {/* About Section */}
-      <section id="about" className="py-24 px-6 max-w-7xl mx-auto">
+      <section id="about" aria-label="About Esther Ilori" className="py-24 px-6 max-w-7xl mx-auto">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-20 items-center">
           <motion.div
             initial={{ x: -50, opacity: 0 }}
@@ -342,12 +613,26 @@ export default function App() {
             viewport={{ once: true }}
             className="relative"
           >
-            <div className="glass-card p-4 rounded-xl rotate-3 hover:rotate-0 transition-transform duration-500">
+            <div className="glass-card p-4 rounded-xl rotate-3 hover:rotate-0 transition-transform duration-500 group">
               <div className="aspect-[4/5] bg-surface-container rounded-lg overflow-hidden relative">
+                {/* Profile photo — always grayscale */}
                 <img
                   src="/profile.jpg"
-                  alt="Esther Ilori"
-                  className="w-full h-full object-cover grayscale hover:grayscale-0 transition-all duration-700"
+                  alt="Esther Ilori — Frontend Developer"
+                  className="w-full h-full object-cover grayscale transition-all duration-700"
+                />
+                {/* Theme-color tint overlay — mix-blend-mode:color colorises the B&W photo */}
+                <div
+                  className="absolute inset-0 opacity-0 group-hover:opacity-75 transition-opacity duration-700 pointer-events-none"
+                  style={{
+                    backgroundColor: `var(--theme-primary)`,
+                    mixBlendMode: 'color',
+                  }}
+                />
+                {/* Subtle glow ring on hover */}
+                <div
+                  className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none rounded-lg"
+                  style={{ boxShadow: `inset 0 0 40px var(--theme-primary)44` }}
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-surface to-transparent opacity-60" />
               </div>
@@ -401,7 +686,7 @@ export default function App() {
       </section>
 
       {/* Skills Section */}
-      <section id="skills" className="py-24 px-6 max-w-7xl mx-auto">
+      <section id="skills" aria-label="Skills and tech stack" className="py-24 px-6 max-w-7xl mx-auto">
         <SectionHeading subtitle="Expertise" title="Tech Stack" />
 
         <div className="grid grid-cols-2 md:grid-cols-5 gap-12 mb-20">
@@ -427,7 +712,7 @@ export default function App() {
       </section>
 
       {/* Projects Section */}
-      <section id="projects" className="py-24 px-6 max-w-7xl mx-auto">
+      <section id="projects" aria-label="Featured projects" className="py-24 px-6 max-w-7xl mx-auto">
         <div className="text-center mb-16">
           <SectionHeading title="Featured Projects" />
           <div className="flex flex-wrap justify-center gap-4">
@@ -588,7 +873,7 @@ export default function App() {
       </AnimatePresence>
 
       {/* Contact Section */}
-      <section id="contact" className="py-24 px-6 max-w-7xl mx-auto">
+      <section id="contact" aria-label="Contact Esther Ilori" className="py-24 px-6 max-w-7xl mx-auto">
         <div className="max-w-xl mx-auto">
           <div className="text-center mb-12">
             <h2 className="text-5xl font-bold text-white mb-6">Let's Build Something Together</h2>
@@ -690,23 +975,28 @@ export default function App() {
       </footer>
 
       {/* Theme Switcher */}
-      <div className="fixed bottom-6 right-6 z-50 glass-pill px-4 py-3 rounded-full flex gap-3 shadow-2xl shadow-black/50 border-white/20">
-        <button 
+      <div
+        role="group"
+        aria-label="Select colour theme"
+        className="fixed bottom-6 right-6 z-50 glass-pill px-4 py-3 rounded-full flex gap-3 shadow-2xl shadow-black/50 border-white/20"
+      >
+        <button
           onClick={() => setTheme('theme-default')}
+          aria-label="Indigo theme" aria-pressed={theme === 'theme-default'}
           className={`w-6 h-6 rounded-full bg-[#c1c1ff] border-2 transition-all ${theme === 'theme-default' ? 'border-white scale-125' : 'border-transparent hover:scale-110'}`}
-          title="Indigo Theme"
         />
-        <button 
+        <button
           onClick={() => setTheme('theme-blaze')}
+          aria-label="Blaze theme" aria-pressed={theme === 'theme-blaze'}
           className={`w-6 h-6 rounded-full bg-[#ffb4a9] border-2 transition-all ${theme === 'theme-blaze' ? 'border-white scale-125' : 'border-transparent hover:scale-110'}`}
-          title="Blaze Theme"
         />
-        <button 
+        <button
           onClick={() => setTheme('theme-cyber')}
+          aria-label="Cyber theme" aria-pressed={theme === 'theme-cyber'}
           className={`w-6 h-6 rounded-full bg-[#58dfc4] border-2 transition-all ${theme === 'theme-cyber' ? 'border-white scale-125' : 'border-transparent hover:scale-110'}`}
-          title="Cyber Theme"
         />
       </div>
     </div>
+    </>
   );
 }
