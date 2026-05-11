@@ -25,7 +25,7 @@ interface Project {
   description: string;
   tags: string[];
   gradient: string;
-  type: 'Frontend' | 'Backend' | 'Full Stack';
+  type: 'Frontend' | 'Full Stack';
   link?: string;
   github?: string;
   image?: string;
@@ -40,7 +40,7 @@ interface Skill {
 const PROJECTS: Project[] = [
   {
     title: "Coffee Shop",
-    description: "A warm, inviting digital café experience — beautifully crafted with pure HTML & CSS to bring the aroma of coffee to your screen.",
+    description: "A warm, inviting digital café experience beautifully crafted with pure HTML & CSS to bring the aroma of coffee to your screen.",
     tags: ["HTML", "CSS"],
     gradient: "from-amber-600/80 to-stone-900/80",
     type: "Frontend",
@@ -58,10 +58,10 @@ const PROJECTS: Project[] = [
   },
   {
     title: "Studify",
-    description: "A focused student workspace to upload study materials, generate practice questions, and keep up with daily review — all in one place.",
+    description: "A clean, interactive student dashboard UI designed to help students organise their study sessions, track progress, and stay focused with a distraction-free interface.",
     tags: ["HTML", "CSS", "JavaScript"],
     gradient: "from-violet-600/80 to-blue-900/80",
-    type: "Frontend",
+    type: "Full Stack",
     link: "https://student-forge.vercel.app/",
     image: "/project_studify.png"
   }
@@ -71,11 +71,11 @@ const SKILLS: Skill[] = [
   { name: "HTML", percentage: 95 },
   { name: "CSS", percentage: 90 },
   { name: "JavaScript", percentage: 85 },
-  { name: "React", percentage: 80 },
-  { name: "Node.js", percentage: 75 }
+  { name: "React", percentage: 82 },
+  { name: "Figma", percentage: 78 }
 ];
 
-const TOOLS = ["Git", "GitHub", "VS Code", "Figma", "REST APIs", "MongoDB"];
+const TOOLS = ["Git", "GitHub", "VS Code", "Figma", "Responsive Design", "REST APIs", "Framer Motion", "Vite"];
 
 // --- DNA Preloader Data (one palette per theme) ---
 const DELAYS = ['0s','.05s','.1s','.15s','.2s','.25s','.3s','.35s','.4s','.45s','.5s'];
@@ -170,6 +170,7 @@ const Nav = () => {
       <motion.button
         whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.95 }}
+        onClick={() => document.getElementById('contact')?.scrollIntoView({ behavior: 'smooth' })}
         className="md:ml-8 px-5 py-2 bg-primary-container/30 border border-primary/30 text-white rounded-full text-xs font-bold uppercase tracking-wider whitespace-nowrap"
       >
         Hire Me
@@ -326,7 +327,7 @@ const Preloader = ({ visible, theme }: { visible: boolean; theme: string }) => {
 };
 
 export default function App() {
-  const [filter, setFilter] = useState<'All' | 'Frontend' | 'Backend' | 'Full Stack'>('All');
+  const [filter, setFilter] = useState<'All' | 'Frontend' | 'Full Stack'>('All');
   const [isImageToggled, setIsImageToggled] = useState(false);
   const [theme, setTheme] = useState<'theme-default' | 'theme-blaze' | 'theme-cyber'>('theme-default');
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
@@ -465,7 +466,7 @@ export default function App() {
             className="mt-8 lg:mt-12 max-w-xl"
           >
             <p className="text-lg md:text-2xl text-on-surface-variant font-medium mb-8 leading-relaxed">
-              Full Stack Developer crafting <span className="text-primary italic font-serif glow-text">unconventional</span>, high-performance web experiences.
+              Full Stack Developer crafting <span className="text-primary italic font-serif glow-text">beautiful</span>, high-performance web experiences.
             </p>
             <div className="flex flex-col sm:flex-row gap-4">
               <GlassButton primary onClick={() => document.getElementById('projects')?.scrollIntoView({ behavior: 'smooth' })} className="border-primary hover:bg-primary hover:text-white">
@@ -618,7 +619,7 @@ export default function App() {
                 {/* Profile photo — always grayscale */}
                 <img
                   src="/profile.jpg"
-                  alt="Esther Ilori — Frontend Developer"
+                  alt="Esther Ilori — Full Stack Developer"
                   className="w-full h-full object-cover grayscale transition-all duration-700"
                 />
                 {/* Theme-color tint overlay — mix-blend-mode:color colorises the B&W photo */}
@@ -661,7 +662,7 @@ export default function App() {
             <div className="glass-card p-12 rounded-xl">
               <h2 className="text-4xl font-bold text-white mb-8">Hello, I'm Esther.</h2>
               <p className="text-on-surface-variant text-lg leading-relaxed mb-6">
-                I'm a passionate Full Stack Developer who builds sleek, performant web applications using modern technologies. I love turning complex problems into elegant, user-centric digital experiences.
+                I'm a passionate Full Stack Developer who crafts sleek, performant web applications using modern technologies. I love turning complex problems into elegant, user-centric digital experiences.
               </p>
               <p className="text-on-surface-variant text-lg leading-relaxed mb-12">
                 My approach combines rigorous logic with an eye for ethereal, refined aesthetics. I believe every pixel should serve a purpose while maintaining a sense of visual delight.
@@ -669,9 +670,9 @@ export default function App() {
 
               <div className="grid grid-cols-3 gap-6">
                 {[
-                  { icon: Clock, label: "3+ Years", sub: "Experience" },
-                  { icon: CheckCircle, label: "20+", sub: "Projects" },
-                  { icon: Users, label: "10+", sub: "Clients" }
+                  { icon: Clock, label: "1+ Year", sub: "Experience" },
+                  { icon: CheckCircle, label: "5+", sub: "Projects" },
+                  { icon: Code, label: "Always", sub: "Learning" }
                 ].map((stat, i) => (
                   <div key={i} className="text-center">
                     <stat.icon className="mx-auto mb-3 text-primary" size={24} />
@@ -716,10 +717,10 @@ export default function App() {
         <div className="text-center mb-16">
           <SectionHeading title="Featured Projects" />
           <div className="flex flex-wrap justify-center gap-4">
-            {['All', 'Frontend', 'Backend', 'Full Stack'].map((f) => (
+            {(['All', 'Frontend', 'Full Stack'] as const).map((f) => (
               <button
                 key={f}
-                onClick={() => setFilter(f as any)}
+                onClick={() => setFilter(f)}
                 className={`px-8 py-2 rounded-full text-xs font-bold uppercase tracking-widest transition-all duration-300 border ${filter === f ? 'bg-primary-container text-white border-primary-container shadow-lg shadow-primary/20' : 'bg-white/5 text-on-surface-variant border-white/10 hover:bg-white/10'}`}
               >
                 {f}
@@ -878,7 +879,7 @@ export default function App() {
           <div className="text-center mb-12">
             <h2 className="text-5xl font-bold text-white mb-6">Let's Build Something Together</h2>
             <p className="text-on-surface-variant text-lg">
-              I'm open to freelance projects, full-time roles, and collaborations.
+              I'm open to freelance projects, full stack roles, and creative collaborations.
             </p>
           </div>
 
@@ -888,7 +889,25 @@ export default function App() {
             viewport={{ once: true }}
             className="glass-card p-12 rounded-xl"
           >
-            <form className="space-y-6">
+
+            <form
+              className="space-y-6"
+              onSubmit={(e) => {
+                e.preventDefault();
+                const name    = (document.getElementById('name')    as HTMLInputElement).value.trim();
+                const email   = (document.getElementById('email')   as HTMLInputElement).value.trim();
+                const message = (document.getElementById('message') as HTMLTextAreaElement).value.trim();
+
+                const text = encodeURIComponent(
+                  `📩 *Message from my Portfolio Website*\n\n` +
+                  `*Name:* ${name || 'Not provided'}\n` +
+                  `*Email:* ${email || 'Not provided'}\n\n` +
+                  `*Message:*\n${message || '(no message)'}`
+                );
+
+                window.open(`https://wa.me/2347040619047?text=${text}`, '_blank');
+              }}
+            >
               {[
                 { id: 'name', label: 'Name', type: 'text', placeholder: 'John Doe' },
                 { id: 'email', label: 'Email', type: 'email', placeholder: 'hello@example.com' }
@@ -917,6 +936,7 @@ export default function App() {
                 />
               </div>
               <motion.button
+                type="submit"
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
                 className="w-full py-4 bg-primary-container/20 border border-primary/30 text-primary font-bold uppercase tracking-widest text-xs rounded-full flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(92,92,255,0.15)] hover:border-primary/60 transition-all"
@@ -924,6 +944,7 @@ export default function App() {
                 Send Message <Send size={16} />
               </motion.button>
             </form>
+
           </motion.div>
 
           <div className="flex justify-center gap-4 mt-12">
