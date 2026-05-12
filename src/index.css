@@ -167,3 +167,46 @@ h1, h2, h3, h4 {
   from { opacity: 0; }
   to   { opacity: 1; }
 }
+
+/* ─────────────────────────────────────────────
+   Profile Image Animations
+───────────────────────────────────────────── */
+
+/* Scan-line static texture */
+.profile-scanlines {
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(0, 0, 0, 0.06) 2px,
+    rgba(0, 0, 0, 0.06) 4px
+  );
+  pointer-events: none;
+}
+
+/* Moving scan beam — vertical sweep */
+@keyframes scan-beam {
+  0%   { top: -2px; }
+  100% { top: 100%; }
+}
+.profile-scan-beam {
+  animation: scan-beam 4s linear infinite;
+}
+
+/* Shimmer sweep — horizontal glide */
+@keyframes shimmer-sweep {
+  0%   { left: -60%; }
+  100% { left: 140%; }
+}
+.profile-shimmer {
+  animation: shimmer-sweep 2.4s ease-in-out infinite;
+}
+
+/* Pulsing corner dot */
+@keyframes pulse-dot {
+  0%, 100% { opacity: 0.5; transform: scale(1); }
+  50%       { opacity: 1;   transform: scale(1.5); }
+}
+.profile-dot {
+  animation: pulse-dot 2s ease-in-out infinite;
+}

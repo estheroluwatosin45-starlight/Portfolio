@@ -614,29 +614,56 @@ export default function App() {
             viewport={{ once: true }}
             className="relative"
           >
-            <div className="glass-card p-4 rounded-xl rotate-3 hover:rotate-0 transition-transform duration-500 group">
-              <div className="aspect-[4/5] bg-surface-container rounded-lg overflow-hidden relative">
-                {/* Profile photo — always grayscale */}
+            <div className="glass-card p-4 rounded-xl rotate-3 hover:rotate-0 transition-transform duration-700 group">
+              {/* Floating wrapper */}
+              <motion.div
+                animate={{ y: [-6, 6, -6] }}
+                transition={{ duration: 5, repeat: Infinity, ease: 'easeInOut' }}
+                className="aspect-[4/5] bg-surface-container rounded-lg overflow-hidden relative"
+              >
+                {/* Profile photo — grayscale by default, full color on hover */}
                 <img
                   src="/profile.jpg"
                   alt="Esther Ilori — Full Stack Developer"
-                  className="w-full h-full object-cover grayscale transition-all duration-700"
+                  className="w-full h-full object-cover object-top grayscale group-hover:grayscale-0 transition-all duration-700 scale-105 group-hover:scale-100"
                 />
-                {/* Theme-color tint overlay — mix-blend-mode:color colorises the B&W photo */}
+
+                {/* Theme-color tint overlay */}
                 <div
-                  className="absolute inset-0 opacity-0 group-hover:opacity-75 transition-opacity duration-700 pointer-events-none"
-                  style={{
-                    backgroundColor: `var(--theme-primary)`,
-                    mixBlendMode: 'color',
-                  }}
+                  className="absolute inset-0 opacity-0 group-hover:opacity-60 transition-opacity duration-700 pointer-events-none"
+                  style={{ backgroundColor: `var(--theme-primary)`, mixBlendMode: 'color' }}
                 />
-                {/* Subtle glow ring on hover */}
+
+                {/* Scan-line animation overlay */}
+                <div
+                  className="absolute inset-0 pointer-events-none rounded-lg profile-scanlines"
+                />
+
+                {/* Moving scan beam */}
+                <div
+                  className="absolute left-0 right-0 h-[2px] pointer-events-none opacity-20 group-hover:opacity-50 transition-opacity duration-500 profile-scan-beam"
+                  style={{ background: `linear-gradient(90deg, transparent, var(--theme-primary), transparent)`, boxShadow: `0 0 8px var(--theme-primary)` }}
+                />
+
+                {/* Shimmer sweep */}
+                <div className="absolute top-0 left-[-60%] w-[40%] h-full pointer-events-none opacity-0 group-hover:opacity-100 profile-shimmer" style={{ background: 'linear-gradient(105deg, transparent 40%, rgba(255,255,255,0.12) 50%, transparent 60%)', transform: 'skewX(-15deg)' }} />
+
+                {/* Inner glow ring on hover */}
                 <div
                   className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none rounded-lg"
-                  style={{ boxShadow: `inset 0 0 40px var(--theme-primary)44` }}
+                  style={{ boxShadow: `inset 0 0 50px var(--theme-primary)55` }}
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-surface to-transparent opacity-60" />
-              </div>
+
+                {/* Bottom fade */}
+                <div className="absolute inset-0 bg-gradient-to-t from-surface via-transparent to-transparent opacity-50" />
+
+                {/* Pulsing corner dot */}
+                <div
+                  className="absolute top-3 right-3 w-2 h-2 rounded-full opacity-50 group-hover:opacity-100 transition-opacity duration-500 profile-dot"
+                  style={{ backgroundColor: `var(--theme-primary)`, boxShadow: `0 0 6px var(--theme-primary)` }}
+                />
+              </motion.div>
+
               {/* Chips */}
               <motion.div
                 initial={{ rotate: -12, scale: 0 }}
